@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ "$1" == "--help" ]]
+then
+    echo "kubectl usage2 my-pod -ns my-ns"
+    exit 0
+fi
+
+if [[ "$1" != "" ]]
+then
+    POD=$1
+    NAMESPACE="default"
+
+    if [[ "$2" == "-ns" ]]
+    then
+        NAMESPACE=$3
+    fi
+
+    kubectl get pod $POD -n $NAMESPACE -o json | jq -r '.spec.containers[].resources'
+    kubectl top pod $POD -n $NAMESPACE --no-headers
+fi
+

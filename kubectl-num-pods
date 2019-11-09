@@ -1,0 +1,26 @@
+#!/bin/bash
+
+max=0
+min=999
+nodes=0;
+pods=0;
+for i in $(kubectl get nodes --no-headers | awk '{print $1}'); 
+do 
+  npods=$(kubectl get pods --all-namespaces -o wide | grep $i | wc -l);
+  echo "$i: $npods"
+ 
+  nodes=$((nodes+1))
+  pods=$((pods+npods))
+  if [ $npods -gt $max ]
+  then
+      max=$((npods))
+  fi
+  if [ $min -gt $npods ]
+  then
+      min=$((npods))
+  fi
+done
+avg=$((pods/nodes))
+echo "AVG Pods per node: $avg" 
+echo "MAX Pods per node: $max" 
+echo "MIN Pods per node: $min" 

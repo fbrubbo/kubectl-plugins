@@ -1,0 +1,139 @@
+#!/bin/bash
+
+if [[ "$1" == "--help" ]]
+then
+    echo "kubectl usage -ns my-namespace"
+    exit 0
+fi
+
+if [[ "$1" == "-ns" ]]
+then
+    NAMESPACE=$2
+
+    printf "%-30s | %-70s | %-7s | %-7s | %-11s | %-10s | %-10s | %-16s \n"  "NAMESPACE" "POD" "CPU" "REQ CPU" "CPU USED(%)" "MEMORY" "REQ MEMORY" "MEMORY USED(%)";
+    tvcpu=0
+    tvreq_cpu=0
+    tvmem=0
+    tvreq_mem=0
+    while read ns pod; 
+    do  
+        lvcpu=0
+        lvreq_cpu=0
+        lvmem=0
+        lvreq_mem=0
+        lperc_cpu=0
+        lperc_mem=0
+        
+        while read cpu mem;
+        do
+            vcpu=$(echo $cpu | sed "s/m//g")
+            lvcpu=$(echo "$lvcpu + $vcpu" | bc)    
+            vmem=$(echo $mem | sed "s/Mi//g")      
+            lvmem=$((lvmem+vmem))
+        
+            resources=$(kubectl get pod $pod -n $ns -o json)
+            while read req_cpu
+            do
+                vreq_cpu=$(echo $req_cpu | sed "s/m//g")
+                lvreq_cpu=$(echo "$lvreq_cpu + $vreq_cpu" | bc)
+            done <<< $(jq --raw-output -r '.spec.containers[].resources.requests.cpu' <<< $resources)
+            while read req_mem
+            do      
+                vreq_mem=$(echo $req_mem | sed "s/Mi//g") 
+                lvreq_mem=$((lvreq_mem+vreq_mem))
+            done <<< $(jq --raw-output -r '.spec.containers[].resources.requests.memory' <<< $resources)        
+        done <<< $(kubectl top pod $pod -n $ns --no-headers | awk '{print $2, $3}')
+        
+        if [ $lvreq_cpu -gt 0 ]
+        then
+            tvcpu=$(echo "$tvcpu + $lvcpu" | bc)
+            tvreq_cpu=$(echo "$tvreq_cpu + $lvreq_cpu" | bc)
+            lperc_cpu=$(echo "scale=2 ; $lvcpu / $lvreq_cpu" | bc)
+        fi
+        if [ $lvreq_mem -gt 0 ]
+        then
+            lperc_mem=$(echo "scale=2 ; $lvmem / $lvreq_mem" | bc)
+            tvmem=$((tvmem+lvmem))
+            tvreq_mem=$((tvreq_mem+lvreq_mem))
+        fi        
+        printf "%-30s | %-70s | %-7s | %-7s | %-11s | %-10s | %-10s | %-16s \n" $ns $pod $lvcpu $lvreq_cpu $lperc_cpu $lvmem $lvreq_mem $lperc_mem        
+    #done <<< $(kubectl get pods --all-namespaces --no-headers | awk '{print $1, $2}')
+    done <<< $(kubectl get pod -n $NAMESPACE --no-headers | awk -v ns=$NAMESPACE '{print ns,$1}')
+    
+    echo "--------------"
+    if [ $tvreq_cpu -gt 0 ]
+    then
+        tvperc_vcpu=$(echo "scale=2 ; $tvcpu / $tvreq_cpu" | bc)
+    fi
+    if [ $tvreq_mem -gt 0 ]
+    then
+        tvperc_mem=$(echo "scale=2 ; $tvmem / $tvreq_mem" | bc)
+    fi        
+    echo "TOTAL USED vs REQUESTED CPU(%): $tvperc_vcpu"
+    echo "TOTAL USED vs REQUESTED MEMORY(%): $tvperc_mem"
+    exit 0
+fi
+
+printf "%-30s | %-70s | %-7s | %-7s | %-11s | %-10s | %-10s | %-16s \n"  "NAMESPACE" "POD" "CPU" "REQ CPU" "CPU USED(%)" "MEMORY" "REQ MEMORY" "MEMORY USED(%)";
+tvcpu=0
+tvreq_cpu=0
+tvmem=0
+tvreq_mem=0
+while read ns pod; 
+do  
+    lvcpu=0
+    lvreq_cpu=0
+    lvmem=0
+    lvreq_mem=0
+    lperc_cpu=0
+    lperc_mem=0
+
+    while read cpu mem;
+    do
+        vcpu=$(echo $cpu | sed "s/m//g")
+        lvcpu=$(echo "$lvcpu + $vcpu" | bc)    
+        vmem=$(echo $mem | sed "s/Mi//g")      
+        lvmem=$((lvmem+vmem))
+
+        resources=$(kubectl get pod $pod -n $ns -o json)
+        while read req_cpu
+        do
+            vreq_cpu=$(echo $req_cpu | sed "s/m//g")
+            lvreq_cpu=$(echo "$lvreq_cpu + $vreq_cpu" | bc)
+        done <<< $(jq --raw-output -r '.spec.containers[].resources.requests.cpu' <<< $resources)
+        while read req_mem
+        do      
+            vreq_mem=$(echo $req_mem | sed "s/Mi//g") 
+            lvreq_mem=$((lvreq_mem+vreq_mem))
+        done <<< $(jq --raw-output -r '.spec.containers[].resources.requests.memory' <<< $resources)
+
+    done <<< $(kubectl top pod $pod -n $ns --no-headers | awk '{print $2, $3}')
+
+    if [ $lvreq_cpu -gt 0 ]
+    then
+        tvcpu=$(echo "$tvcpu + $lvcpu" | bc)
+        tvreq_cpu=$(echo "$tvreq_cpu + $lvreq_cpu" | bc)
+        lperc_cpu=$(echo "scale=2 ; $lvcpu / $lvreq_cpu" | bc)
+    fi
+    if [ $lvreq_mem -gt 0 ]
+    then
+        lperc_mem=$(echo "scale=2 ; $lvmem / $lvreq_mem" | bc)
+        tvmem=$((tvmem+lvmem))
+        tvreq_mem=$((tvreq_mem+lvreq_mem))
+    fi        
+    printf "%-30s | %-70s | %-7s | %-7s | %-11s | %-10s | %-10s | %-16s \n" $ns $pod $lvcpu $lvreq_cpu $lperc_cpu $lvmem $lvreq_mem $lperc_mem    
+done <<< $(kubectl get pods --all-namespaces --no-headers | awk '{print $1, $2}')
+#done <<< $(kubectl get pod -n $NAMESPACE --no-headers | awk -v ns=$NAMESPACE '{print ns,$1}')
+
+echo "--------------"
+if [ $tvreq_cpu -gt 0 ]
+then
+    tvperc_vcpu=$(echo "scale=2 ; $tvcpu / $tvreq_cpu" | bc)
+fi
+if [ $tvreq_mem -gt 0 ]
+then
+    tvperc_mem=$(echo "scale=2 ; $tvmem / $tvreq_mem" | bc)
+fi        
+echo "TOTAL USED vs REQUESTED CPU(%): $tvperc_vcpu"
+echo "TOTAL USED vs REQUESTED MEMORY(%): $tvperc_mem"
+
