@@ -1,5 +1,13 @@
 # kubectl-plugins
 
+To start using these plugins, first execute the following:
+
+```bash
+git clone https://github.com/fbrubbo/kubectl-plugins.git
+export PATH=$PATH:$(pwd)/kubectl-plugins
+kubectl snapshot -h
+```
+
 ## kubectl snapshot
 
 **Disclaimer: this pluting uses *kubectl top* to get cpu and memory usage. That means, it gets current resource usage. In other workds, this plugin does not consider historical data.**
