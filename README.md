@@ -51,6 +51,7 @@ The above command will generate 4 files
 2. Import all files in a spreadsheet (use different sheets for each file)
 3. In the **hpa** sheet, sort by **Usage CPU (%)** in the acendent order
    - You will see at the top hpas which, probably, are miss configured
+      - Or your app is not being used at the time you run this command
       - Or min replicas too big
       - Or target cpu too low
       - Or the request resources in de pods are too high
