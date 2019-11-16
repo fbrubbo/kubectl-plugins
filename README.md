@@ -55,22 +55,27 @@ The above command will generate 4 files
       - Or min replicas too big
       - Or target cpu too low
       - Or the request resources in de pods are too high
+   - Another good aproach is to filter only hpa with low **Usage CPU (%)**, eg < 55%, and then order **Requests CPU (m)** in decendent order.
+      - You will see at the top, the top offenders.
 4. In the **nohpa** sheet, sort by **Usage CPU (%)** in the acendent order
    - You will see at the top deployments which are requesting a lot of resource and not using it. Consider:
        1. reducing the resources requests
        2. and creating an HPA for each of them
+   - The same way as HPA, you can filter low usage and then look at top offenders.
 5. In the **nohpa** sheet, sort by **Usage CPU (%)** in the decendent order
    - You will see at the top deployments which are using a lot of resources. Consider:
-       1. Check if resource requets and limits are set. When it is not set, we set the value 100%. In this case, consider seting the appropriate value.
-       2. revisiting the app to see why it is using too much resources
-       3. if your app is already doing its best, increase the resources requests
+       1. Check if resource requets and limits are set. When it is not set, the plugin set 100%. In this case, consider seting the appropriate values.
+       2. Revisit the app to see why it is using too much resources
+       3. If your app is already doing its best, increase the resources requests
 6. In the **node** sheet
-   - Look at the **Num Pods In Node** to understand if you have nodes underutilized
+   - Look at the **Allocated** vs  **Actual** info to understand if you have nodes underutilized
+     - If so, you may have too high min value in node pools, over used memory but not cpu, etc
    - Using columns **Request CPU (m)** and **Top CPU (m)**, you can do a simple math to have an approximation of how much you are spending above what you need. Note that in stdoi output, this math is already done for you
+   - Similarly, you can use **Allocated CPU (m)** and **Request CPU (m)** to understand how much your capacity is bigger than you requested.
    - Use the **-debug** parameber to understand which pods are in which node (stdio only)
-7. Use the **pods** sheet to fine tunning
+7. Use the **pods** sheet for fine tunning
 
-Note that this is only a suggetion, you do similar analysis to improve the usage of your cluster and, consequently, reduce your costs.
+Note that this is only a suggetion, you can do many other similar analysis to improve the usage of your cluster and, consequently, reduce your costs.
 
 ## kubectl snapshot hpas
 
