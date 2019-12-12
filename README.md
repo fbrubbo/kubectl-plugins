@@ -35,15 +35,15 @@ kubectl snapshot -h
 The default behaviour of this plugin is to print the output in the stdio, if you would like to generate csv files to import it to a spreadsheet use
 
 ```bash
-kubectl snapshot -csv-output <snapshot-name>
+kubectl snapshot -csv-output <NAME>
 ```
 
 The above command will generate 4 files
 
-- **kubectl-snapshot-\<DATE_TIME\>-pods.csv** : all pods data and its respective resource usage
-- **kubectl-snapshot-\<DATE_TIME\>-hpas.csv** : all hpas data and all its pods respective resource usage
-- **kubectl-snapshot-\<DATE_TIME\>-nohpas.csv** : all deploymentes without hpa and all its pods respective resource usage
-- **kubectl-snapshot-\<DATE_TIME\>-nodes.csv** : all nodes data and all its respective resource usage
+- **kubectl-snapshot-\<DATE_TIME\>-\<NAME\>-pods.csv** : all pods data and its respective resource usage
+- **kubectl-snapshot-\<DATE_TIME\>-\<NAME\>-hpas.csv** : all hpas data and all its pods respective resource usage
+- **kubectl-snapshot-\<DATE_TIME\>-\<NAME\>-nohpas.csv** : all deploymentes without hpa and all its pods respective resource usage
+- **kubectl-snapshot-\<DATE_TIME\>-\<NAME\>-nodes.csv** : all nodes data and all its respective resource usage
 
 ### Sugestions on how to interpret the data
 
