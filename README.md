@@ -35,7 +35,7 @@ kubectl snapshot -h
 The default behaviour of this plugin is to print the output in the stdio, if you would like to generate csv files to import it to a spreadsheet use
 
 ```bash
-kubectl snapshot -csv-output
+kubectl snapshot -csv-output <snapshot-name>
 ```
 
 The above command will generate 4 files
