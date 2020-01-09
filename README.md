@@ -1,3 +1,5 @@
+<h1> Deprecated. Use https://github.com/fbrubbo/kubectl-snapshot</h1>
+
 # kubectl-plugins
 
 To start using these plugins, first execute the following:
